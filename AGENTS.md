@@ -18,9 +18,10 @@ one or more client businesses. Preserve strict separation between client
 businesses while providing authorized operators with a unified view.
 
 The current implementation includes the public landing page, responsive
-navigation, theming, email/password and social authentication, sessions, and
-role-ready user records. Do not present planned supply chain workflows as
-already implemented.
+navigation, theming, verified email/password and social authentication,
+sessions, role-aware dashboard navigation, and role-specific dashboard
+onboarding views. Do not present planned supply chain workflows as already
+implemented.
 
 ## Stack and structure
 
@@ -30,7 +31,27 @@ already implemented.
 - Prisma with PostgreSQL; the source schema is `prisma/schema.prisma`
 - Generated Prisma code lives in `app/generated/prisma/`; never edit it by hand
 - `app/(root)/` contains public routes and `app/(auth)/` contains auth routes
+- `app/(dashboard)/dashboard/` contains the authenticated dashboard layout and
+  role-aware dashboard page
+- Dashboard sidebar components live in `components/sidebar/`
 - Use the `@/` alias for project-root imports
+
+## Authentication and dashboard behavior
+
+- Email/password signup requires email verification, sends users to `/verify`,
+  and uses `/dashboard` as the post-verification callback.
+- Better Auth automatically signs users in after successful verification.
+- Derive dashboard roles from the server session. Sidebar visibility is not an
+  authorization boundary; every data route must independently authorize role
+  and tenant access on the server.
+- `SidebarNavigation.tsx` owns role-to-link configuration and active link state.
+  `AppSidebar.tsx` loads the trusted session, and `SidebarUserMenu.tsx` owns the
+  account dropdown and logout interaction.
+- Customer links currently target guarded placeholder pages for vendors,
+  products, inventory, orders, business settings, and support. These workflows
+  are not implemented yet and must remain labeled as coming soon.
+- `SiteLogo` supports `textClassNames`; the dashboard hides its text only while
+  the sidebar is collapsed.
 
 ## Domain and security rules
 
@@ -56,3 +77,6 @@ already implemented.
   utility classes.
 - After changes, run targeted ESLint checks and run `npm run build` for changes
   affecting routes, authentication, database access, or production behavior.
+- The current production build has a pre-existing UploadThing type mismatch in
+  `components/form-fields/FileUploadField.tsx`: `onUploadProgress` expects a
+  number, while the component currently destructures a `{ progress }` object.

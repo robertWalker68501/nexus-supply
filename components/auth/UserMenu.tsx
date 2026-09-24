@@ -1,5 +1,7 @@
 'use client';
 
+import { LayoutDashboard } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -49,7 +51,10 @@ const UserMenu = () => {
       />
       <DropdownMenuContent className='w-32'>
         <DropdownMenuGroup>
-          <DropdownMenuItem>Profile</DropdownMenuItem>
+          <DropdownMenuItem render={<Link href='/dashboard' />}>
+            <LayoutDashboard />
+            Dashboard
+          </DropdownMenuItem>
           <DropdownMenuItem>Billing</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>

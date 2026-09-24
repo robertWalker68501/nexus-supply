@@ -5,6 +5,7 @@ import Link from 'next/link';
 interface SiteLogoProps {
   href: string;
   classNames?: string;
+  textClassNames?: string;
   onClick?: () => void;
   imgSrc?: string;
   imgAlt?: string;
@@ -16,6 +17,7 @@ interface SiteLogoProps {
 const SiteLogo = ({
   href,
   classNames,
+  textClassNames,
   onClick,
   imgSrc = '/assets/images/logo.png',
   imgAlt = 'NexusSupply Logo',
@@ -35,7 +37,7 @@ const SiteLogo = ({
         height={imgHeight}
         width={imgWidth}
       />
-      {text}
+      <span className={textClassNames}>{text}</span>
     </Link>
   );
 };
