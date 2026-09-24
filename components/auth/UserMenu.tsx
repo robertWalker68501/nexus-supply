@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,8 +12,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { authClient } from '@/lib/auth-client';
 
 const UserMenu = () => {
+  const router = useRouter();
+
+  const signOutUser = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push('/');
+          router.refresh();
+        },
+      },
+    });
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -39,7 +55,12 @@ const UserMenu = () => {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem variant='destructive'>Log out</DropdownMenuItem>
+          <DropdownMenuItem
+            variant='destructive'
+            onClick={signOutUser}
+          >
+            Log out
+          </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -4,7 +4,10 @@ import { nextCookies } from 'better-auth/next-js';
 
 import prisma from '@/lib/prisma';
 
+import { sendVerificationEmail } from './send-verification-email';
+
 export const auth = betterAuth({
+  appName: 'nexusSupply',
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
@@ -19,6 +22,18 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendVerificationEmail({
+        to: user.email,
+        verificationUrl: url,
+        userName: user.name,
+      });
+    },
   },
   socialProviders: {
     github: {
