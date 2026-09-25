@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   ListOrdered,
+  Package,
   PackageSearch,
   Settings,
   ShoppingCart,
@@ -139,11 +140,27 @@ const customerGroups: readonly NavigationGroup[] = [
   },
 ];
 
+const productGroup: NavigationGroup = {
+  label: 'Products',
+  items: [
+    { title: 'View products', href: '/dashboard/products', icon: Package },
+    { title: 'Add product', href: '/dashboard/products/new', icon: CirclePlus },
+  ],
+};
+
+const vendorGroup: NavigationGroup = {
+  label: 'Vendors',
+  items: [
+    { title: 'View vendors', href: '/dashboard/vendors', icon: Building2 },
+    { title: 'Add vendor', href: '/dashboard/vendors/new', icon: CirclePlus },
+  ],
+};
+
 const navigationByRole: Record<UserRole, readonly NavigationGroup[]> = {
   OWNER: [dashboardGroup, businessManagementGroup],
   ADMIN: [dashboardGroup, businessManagementGroup],
-  CLIENT_ADMIN: [dashboardGroup],
-  MANAGER: [dashboardGroup],
+  CLIENT_ADMIN: [dashboardGroup, vendorGroup, productGroup],
+  MANAGER: [dashboardGroup, vendorGroup, productGroup],
   RECEIVING: [dashboardGroup],
   SHIPPING: [dashboardGroup],
   CUSTOMER_SERVICE: [dashboardGroup],
@@ -171,6 +188,8 @@ const SidebarNavigation = ({
             },
           ],
         },
+        vendorGroup,
+        productGroup,
       ]
     : [dashboardGroup];
   const navigationGroups =

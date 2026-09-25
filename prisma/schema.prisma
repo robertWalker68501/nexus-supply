@@ -147,6 +147,8 @@ model Business {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members      BusinessMember[]
   invitations  BusinessInvitation[]
+  vendors      Vendor[]
+  products     Product[]
 
   @@unique([organizationId, slug])
   @@unique([organizationId, code])
@@ -191,4 +193,87 @@ model BusinessInvitation {
   @@index([businessId, status])
   @@index([email, status])
   @@map("business_invitation")
+}
+
+
+enum VendorStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Vendor {
+  id            String       @id @default(cuid())
+  businessId    String
+  name          String
+  code          String
+  status        VendorStatus @default(ACTIVE)
+  contactName   String?
+  contactEmail  String?
+  contactPhone  String?
+  addressLine1  String?
+  addressLine2  String?
+  city          String?
+  stateProvince String?
+  postalCode    String?
+  country       String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  products       Product[]
+  productSources ProductVendor[]
+
+  @@unique([businessId, code])
+  @@index([businessId, status])
+  @@index([businessId, name])
+  @@map("vendor")
+}
+
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Product {
+  id            String        @id @default(cuid())
+  businessId    String
+  vendorId      String?
+  name          String
+  sku           String
+  description   String?
+  unitOfMeasure String        @default("Each")
+  vendorSku     String?
+  status        ProductStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  vendor   Vendor?  @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  sources  ProductVendor[]
+
+  @@unique([businessId, sku])
+  @@index([businessId, status])
+  @@index([businessId, name])
+  @@index([vendorId])
+  @@map("product")
+}
+
+
+model ProductVendor {
+  id         String   @id @default(cuid())
+  productId  String
+  vendorId   String
+  vendorSku  String?
+  preferred  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  vendor  Vendor  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, vendorId])
+  @@index([vendorId])
+  @@index([productId, preferred])
+  @@map("product_vendor")
 }

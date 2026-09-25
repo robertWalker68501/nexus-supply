@@ -13,14 +13,6 @@ import {
 import { auth } from '@/lib/auth';
 
 const customerPages = {
-  vendors: {
-    title: 'Vendors',
-    description: 'View and manage your vendor relationships.',
-  },
-  'vendors/new': {
-    title: 'Add vendor',
-    description: 'Create a vendor record for your business.',
-  },
   products: {
     title: 'Products',
     description: 'View and manage your product catalog.',

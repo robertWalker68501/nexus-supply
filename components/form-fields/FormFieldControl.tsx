@@ -231,9 +231,20 @@ export function FormFieldControl<
                     onBlur={field.onBlur}
                     ref={field.ref}
                   >
-                    <SelectValue
-                      placeholder={props.placeholder ?? 'Select an option'}
-                    />
+                    {field.value ? (
+                      <span
+                        data-slot="select-value"
+                        className="flex flex-1 items-center gap-1.5 text-left"
+                      >
+                        {props.options.find(
+                          (option) => option.value === field.value,
+                        )?.label ?? String(field.value)}
+                      </span>
+                    ) : (
+                      <SelectValue
+                        placeholder={props.placeholder ?? 'Select an option'}
+                      />
+                    )}
                   </SelectTrigger>
 
                   <SelectContent>

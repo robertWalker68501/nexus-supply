@@ -115,14 +115,26 @@ test.describe('active-business context and integration', () => {
       });
 
       await signIn(page, clientEmail, PASSWORD);
-      await page.getByLabel('Active business').selectOption(secondBusiness.id);
+      const selector = page.getByLabel('Active business');
+      await selector.selectOption(secondBusiness.id);
 
-      await expect(page.getByRole('heading', { name: 'Manage your supply-chain operations' })).toBeVisible();
+      await expect(selector).toHaveValue(secondBusiness.id);
+      await expect(
+        page.getByRole('main').getByText('E2E Persisted Business', { exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.locator('[data-slot="badge"]', { hasText: /^Manager$/ }),
+      ).toBeVisible();
+
       await page.reload();
 
       await expect(page.getByLabel('Active business')).toHaveValue(secondBusiness.id);
-      await expect(page.getByRole('main').getByText('E2E Persisted Business', { exact: true })).toBeVisible();
-      await expect(page.getByRole('main').getByText('Manager', { exact: true })).toBeVisible();
+      await expect(
+        page.getByRole('main').getByText('E2E Persisted Business', { exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.locator('[data-slot="badge"]', { hasText: /^Manager$/ }),
+      ).toBeVisible();
     } finally {
       await deleteUserByEmail(clientEmail);
       await deleteUserByEmail(ownerEmail);

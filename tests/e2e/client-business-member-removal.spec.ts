@@ -236,13 +236,11 @@ test.describe('client-business member removal and access revocation', () => {
 
       await memberPage.reload();
       await expect(
-        memberPage
-          .getByRole('main')
-          .getByText('E2E Preserved Business', { exact: true }),
-      ).toBeVisible();
+        memberPage.getByRole('heading', { name: 'Shipping workspace', exact: true }),
+      ).toBeVisible({ timeout: 15_000 });
       await expect(
-        memberPage.getByRole('heading', { name: 'Shipping workspace', exact: true })
-      ).toBeVisible();
+        memberPage.getByRole('main').getByText('E2E Removed Business', { exact: true }),
+      ).toHaveCount(0);
 
       const removedMembership = await prisma.businessMember.findUnique({
         where: {
