@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import BusinessSwitcher from '@/components/businesses/BusinessSwitcher';
 import SidebarNavigation from '@/components/sidebar/SidebarNavigation';
 import SidebarUserMenu from '@/components/sidebar/SidebarUserMenu';
 import SiteLogo from '@/components/SiteLogo';
@@ -11,8 +12,17 @@ import {
   SidebarHeader,
 } from '@/components/ui/sidebar';
 import { auth } from '@/lib/auth';
+import { getBusinessContext } from '@/lib/businesses/context';
 
-type UserRole = 'USER' | 'MANAGER' | 'CUSTOMER' | 'CSR';
+type UserRole =
+  | 'OWNER'
+  | 'ADMIN'
+  | 'CLIENT_ADMIN'
+  | 'MANAGER'
+  | 'RECEIVING'
+  | 'SHIPPING'
+  | 'CUSTOMER_SERVICE'
+  | 'VIEWER';
 
 const AppSidebar = async () => {
   const session = await auth.api.getSession({
@@ -21,7 +31,11 @@ const AppSidebar = async () => {
 
   if (!session) redirect('/sign-in');
 
-  const role = session.user.role as UserRole;
+  const businessContext = session.user.role ? null : await getBusinessContext();
+  const activeMembership = businessContext?.activeMembership ?? null;
+
+  const role = (session.user.role ?? activeMembership?.role ?? 'VIEWER') as UserRole;
+  const roleLabel = session.user.role ?? activeMembership?.role ?? 'NO ACCESS';
 
   return (
     <Sidebar collapsible='icon'>
@@ -33,14 +47,23 @@ const AppSidebar = async () => {
         />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarNavigation role={role} />
+        {activeMembership && businessContext && (
+          <BusinessSwitcher
+            activeBusinessId={activeMembership.businessId}
+            businesses={businessContext.memberships.map((membership) => ({
+              id: membership.businessId,
+              name: membership.business.name,
+            }))}
+          />
+        )}
+        <SidebarNavigation role={role} activeBusinessId={activeMembership?.businessId} />
       </SidebarContent>
       <SidebarFooter className='border-sidebar-border border-t'>
         <SidebarUserMenu
           name={session.user.name}
           email={session.user.email}
           image={session.user.image}
-          role={role}
+          role={roleLabel}
         />
       </SidebarFooter>
     </Sidebar>

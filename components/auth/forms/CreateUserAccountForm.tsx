@@ -25,7 +25,7 @@ import { toast } from '@/components/ui/toast';
 import { authClient } from '@/lib/auth-client';
 import { createUserAccountSchema } from '@/lib/schemas/UserSchema';
 
-const CreateUserAccountForm = () => {
+const CreateUserAccountForm = ({ callbackURL = '/dashboard' }: { callbackURL?: string }) => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -49,7 +49,7 @@ const CreateUserAccountForm = () => {
           name,
           email,
           password,
-          callbackURL: '/dashboard',
+          callbackURL,
         },
         {
           onSuccess: () => {
@@ -75,12 +75,14 @@ const CreateUserAccountForm = () => {
   const signInWithGoogle = async () => {
     await authClient.signIn.social({
       provider: 'google',
+      callbackURL,
     });
   };
 
   const signInWithGithub = async () => {
     await authClient.signIn.social({
       provider: 'github',
+      callbackURL,
     });
   };
 
@@ -150,7 +152,7 @@ const CreateUserAccountForm = () => {
                 <p className='text-muted-foreground text-sm'>
                   Already have an accout?{' '}
                   <Link
-                    href='/sign-in'
+                    href={`/sign-in?callbackURL=${encodeURIComponent(callbackURL)}`}
                     className='hover:text-primary'
                   >
                     Sign In

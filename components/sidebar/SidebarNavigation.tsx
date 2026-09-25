@@ -3,6 +3,7 @@
 import {
   Boxes,
   Building2,
+  BriefcaseBusiness,
   CirclePlus,
   LayoutDashboard,
   LifeBuoy,
@@ -10,6 +11,7 @@ import {
   PackageSearch,
   Settings,
   ShoppingCart,
+  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -25,7 +27,15 @@ import {
 
 import type { LucideIcon } from 'lucide-react';
 
-export type UserRole = 'USER' | 'MANAGER' | 'CUSTOMER' | 'CSR';
+export type UserRole =
+  | 'OWNER'
+  | 'ADMIN'
+  | 'CLIENT_ADMIN'
+  | 'MANAGER'
+  | 'RECEIVING'
+  | 'SHIPPING'
+  | 'CUSTOMER_SERVICE'
+  | 'VIEWER';
 
 type NavigationItem = {
   title: string;
@@ -45,6 +55,17 @@ const dashboardGroup: NavigationGroup = {
       title: 'Dashboard',
       href: '/dashboard',
       icon: LayoutDashboard,
+    },
+  ],
+};
+
+const businessManagementGroup: NavigationGroup = {
+  label: 'Workspace',
+  items: [
+    {
+      title: 'Client businesses',
+      href: '/dashboard/businesses',
+      icon: BriefcaseBusiness,
     },
   ],
 };
@@ -119,15 +140,43 @@ const customerGroups: readonly NavigationGroup[] = [
 ];
 
 const navigationByRole: Record<UserRole, readonly NavigationGroup[]> = {
-  USER: [dashboardGroup],
+  OWNER: [dashboardGroup, businessManagementGroup],
+  ADMIN: [dashboardGroup, businessManagementGroup],
+  CLIENT_ADMIN: [dashboardGroup],
   MANAGER: [dashboardGroup],
-  CUSTOMER: customerGroups,
-  CSR: [dashboardGroup],
+  RECEIVING: [dashboardGroup],
+  SHIPPING: [dashboardGroup],
+  CUSTOMER_SERVICE: [dashboardGroup],
+  VIEWER: [dashboardGroup],
 };
 
-const SidebarNavigation = ({ role }: { role: UserRole }) => {
+const SidebarNavigation = ({
+  role,
+  activeBusinessId,
+}: {
+  role: UserRole;
+  activeBusinessId?: string;
+}) => {
   const pathname = usePathname();
-  const navigationGroups = navigationByRole[role] ?? [dashboardGroup];
+  const clientAdminGroups: readonly NavigationGroup[] = activeBusinessId
+    ? [
+        dashboardGroup,
+        {
+          label: 'Business administration',
+          items: [
+            {
+              title: 'Team members',
+              href: `/dashboard/businesses/${activeBusinessId}/members`,
+              icon: Users,
+            },
+          ],
+        },
+      ]
+    : [dashboardGroup];
+  const navigationGroups =
+    role === 'CLIENT_ADMIN'
+      ? clientAdminGroups
+      : navigationByRole[role] ?? [dashboardGroup];
 
   return navigationGroups.map((group) => (
     <SidebarGroup key={group.label}>

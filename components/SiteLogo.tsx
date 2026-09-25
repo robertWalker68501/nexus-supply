@@ -36,6 +36,7 @@ const SiteLogo = ({
         alt={imgAlt}
         height={imgHeight}
         width={imgWidth}
+        className='h-auto w-auto'
       />
       <span className={textClassNames}>{text}</span>
     </Link>

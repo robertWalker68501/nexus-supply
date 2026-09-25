@@ -239,7 +239,7 @@ function UploadFieldBody({
   const uploadOptions = {
     uploadProgressGranularity: 'fine' as const,
     onClientUploadComplete: handleUploadComplete,
-    onUploadProgress: ({ progress: nextProgress }: { progress: number }) => {
+    onUploadProgress: (nextProgress: number) => {
       setProgress(nextProgress);
     },
     onUploadError: (error: Error) => {

@@ -1,9 +1,14 @@
 import SignInUserForm from '@/components/auth/forms/SignInUserForm';
 
-const SignInPage = () => {
+const SignInPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackURL?: string }>;
+}) => {
+  const { callbackURL } = await searchParams;
   return (
     <div className='w-full'>
-      <SignInUserForm />
+      <SignInUserForm callbackURL={callbackURL} />
     </div>
   );
 };

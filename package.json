@@ -6,13 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
     "@hookform/resolvers": "^5.9.1",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
+    "@react-email/components": "^1.0.12",
     "@shadcn/react": "^0.3.1",
     "@tinymce/tinymce-react": "^6.3.0",
     "@uploadthing/react": "^7.3.3",
@@ -45,6 +47,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@react-email/ui": "^6.11.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

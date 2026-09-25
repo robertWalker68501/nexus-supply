@@ -1,9 +1,14 @@
 import CreateUserAccountForm from '@/components/auth/forms/CreateUserAccountForm';
 
-const SignUpPage = () => {
+const SignUpPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackURL?: string }>;
+}) => {
+  const { callbackURL } = await searchParams;
   return (
     <div className='w-full'>
-      <CreateUserAccountForm />
+      <CreateUserAccountForm callbackURL={callbackURL} />
     </div>
   );
 };

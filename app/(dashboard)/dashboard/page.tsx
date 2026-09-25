@@ -7,7 +7,6 @@ import {
   Headphones,
   PackageSearch,
   Route,
-  ShoppingCart,
   Users,
 } from 'lucide-react';
 import { headers } from 'next/headers';
@@ -15,7 +14,6 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { Badge } from '@/components/ui/badge';
-import { buttonVariants } from '@/components/ui/button';
 import {
   Card,
   CardAction,
@@ -25,10 +23,19 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { auth } from '@/lib/auth';
+import { getBusinessContext } from '@/lib/businesses/context';
 
 import type { LucideIcon } from 'lucide-react';
 
-type UserRole = 'USER' | 'MANAGER' | 'CUSTOMER' | 'CSR';
+type UserRole =
+  | 'OWNER'
+  | 'ADMIN'
+  | 'CLIENT_ADMIN'
+  | 'MANAGER'
+  | 'RECEIVING'
+  | 'SHIPPING'
+  | 'CUSTOMER_SERVICE'
+  | 'VIEWER';
 
 type WorkArea = {
   title: string;
@@ -46,9 +53,9 @@ type DashboardView = {
 };
 
 const dashboardViews: Record<UserRole, DashboardView> = {
-  USER: {
-    eyebrow: 'Operations workspace',
-    title: 'Keep daily operations moving',
+  OWNER: {
+    eyebrow: 'Owner workspace',
+    title: 'Manage NexusSupply operations',
     description:
       'Your workspace will bring inventory, purchasing, and fulfillment tasks together as those workflows are configured.',
     workAreas: [
@@ -74,7 +81,7 @@ const dashboardViews: Record<UserRole, DashboardView> = {
       'Complete your workspace profile',
     ],
   },
-  MANAGER: {
+  ADMIN: {
     eyebrow: 'Management workspace',
     title: 'Coordinate teams and client operations',
     description:
@@ -102,72 +109,65 @@ const dashboardViews: Record<UserRole, DashboardView> = {
       'Define operational reporting needs',
     ],
   },
-  CUSTOMER: {
-    eyebrow: 'Customer workspace',
-    title: 'Manage your supply network',
+  CLIENT_ADMIN: {
+    eyebrow: 'Client administration',
+    title: 'Manage your client business',
     description:
-      'Set up the vendors, products, inventory, and orders your business will manage through NexusSupply.',
+      'Administer users and access for the active client business without platform-level privileges.',
     workAreas: [
       {
-        title: 'Vendor network',
-        description: 'Add and maintain the vendors your business works with.',
-        icon: Building2,
-        href: '/dashboard/vendors',
-      },
-      {
-        title: 'Product catalog',
-        description: 'Build your catalog and prepare products for ordering.',
-        icon: PackageSearch,
-        href: '/dashboard/products',
-      },
-      {
-        title: 'Order management',
-        description: 'Create and review purchase orders for your business.',
-        icon: ShoppingCart,
-        href: '/dashboard/orders',
+        title: 'Team administration',
+        description: 'Manage the users and roles assigned to this client business.',
+        icon: Users,
       },
     ],
     nextSteps: [
-      'Add your first vendor',
-      'Create your product catalog',
-      'Review inventory requirements',
+      'Review client-business users',
+      'Confirm role assignments',
+      'Continue to operational workflows',
     ],
   },
-  CSR: {
-    eyebrow: 'Customer service workspace',
-    title: 'Support customers with confidence',
-    description:
-      'Your service view will centralize authorized customer requests, order questions, and issue follow-up.',
-    workAreas: [
-      {
-        title: 'Customer requests',
-        description: 'Review requests from the customers you support.',
-        icon: Headphones,
-      },
-      {
-        title: 'Order assistance',
-        description: 'Help customers understand order status and next steps.',
-        icon: ShoppingCart,
-      },
-      {
-        title: 'Issue follow-up',
-        description: 'Track service issues through resolution.',
-        icon: ClipboardList,
-      },
-    ],
-    nextSteps: [
-      'Confirm your customer assignments',
-      'Review service escalation procedures',
-      'Complete your support profile',
-    ],
+  MANAGER: {
+    eyebrow: 'Client business', title: 'Manage your supply-chain operations',
+    description: 'Your access is scoped to the client businesses assigned to your account.',
+    workAreas: [{ title: 'Business operations', description: 'Manage the workflows permitted for your assigned business.', icon: Building2 }],
+    nextSteps: ['Select your client business', 'Review your assigned permissions', 'Begin managing supply-chain activity'],
+  },
+  RECEIVING: {
+    eyebrow: 'Client business', title: 'Receiving workspace',
+    description: 'Your access is limited to receiving workflows for your assigned client business.',
+    workAreas: [{ title: 'Receiving', description: 'Receive inbound inventory without access to shipping workflows.', icon: PackageSearch }],
+    nextSteps: ['Select your client business', 'Review inbound work', 'Process authorized receiving activity'],
+  },
+  SHIPPING: {
+    eyebrow: 'Client business', title: 'Shipping workspace',
+    description: 'Your access is limited to shipping workflows for your assigned client business.',
+    workAreas: [{ title: 'Shipping', description: 'Process outbound fulfillment without access to receiving workflows.', icon: Route }],
+    nextSteps: ['Select your client business', 'Review outbound work', 'Process authorized shipping activity'],
+  },
+  CUSTOMER_SERVICE: {
+    eyebrow: 'Client business', title: 'Customer service workspace',
+    description: 'Your access is limited to customer-service workflows for your assigned client business.',
+    workAreas: [{ title: 'Customer service', description: 'Work with the customer-service tools granted to your role.', icon: Headphones }],
+    nextSteps: ['Select your client business', 'Review customer activity', 'Work within your assigned permissions'],
+  },
+  VIEWER: {
+    eyebrow: 'Client business', title: 'Business overview',
+    description: 'Your account has read-only access to the client businesses assigned to you.',
+    workAreas: [{ title: 'Supply-chain visibility', description: 'Review authorized business information without operational changes.', icon: Boxes }],
+    nextSteps: ['Select your client business', 'Review available information', 'Contact an administrator if you need additional access'],
   },
 };
 
 const roleLabels: Record<UserRole, string> = {
-  USER: 'Operator',
+  OWNER: 'Owner',
+  ADMIN: 'Administrator',
+  CLIENT_ADMIN: 'Client administrator',
   MANAGER: 'Manager',
-  CUSTOMER: 'Customer',
-  CSR: 'Customer service',
+  RECEIVING: 'Receiving',
+  SHIPPING: 'Shipping',
+  CUSTOMER_SERVICE: 'Customer service',
+  VIEWER: 'Viewer',
 };
 
 const DashboardPage = async () => {
@@ -177,8 +177,26 @@ const DashboardPage = async () => {
 
   if (!session) redirect('/sign-in');
 
-  const role = session.user.role as UserRole;
-  const view = dashboardViews[role] ?? dashboardViews.USER;
+  const businessContext = session.user.role ? null : await getBusinessContext();
+  const activeMembership = businessContext?.activeMembership ?? null;
+
+  if (!session.user.role && !activeMembership) {
+    return (
+      <div className='mx-auto w-full max-w-2xl p-5 sm:p-8'>
+        <Card>
+          <CardHeader>
+            <CardTitle>No client business access</CardTitle>
+            <CardDescription>
+              Your account is signed in, but it has not been assigned to a client business yet. Contact your NexusSupply administrator for access.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
+  const role = (session.user.role ?? activeMembership?.role) as UserRole;
+  const view = dashboardViews[role];
   const firstName = session.user.name.trim().split(/\s+/)[0];
 
   return (
@@ -194,6 +212,9 @@ const DashboardPage = async () => {
               {view.eyebrow}
             </p>
             <Badge variant='secondary'>{roleLabels[role]}</Badge>
+            {activeMembership && (
+              <Badge variant='outline'>{activeMembership.business.name}</Badge>
+            )}
           </div>
           <h1 className='font-heading text-3xl font-semibold tracking-tight sm:text-4xl'>
             Welcome back, {firstName}
@@ -205,41 +226,6 @@ const DashboardPage = async () => {
         </div>
       </header>
 
-      {role === 'CUSTOMER' && (
-        <section aria-labelledby='quick-actions-title'>
-          <div className='mb-4'>
-            <h2
-              id='quick-actions-title'
-              className='font-heading text-xl font-semibold'
-            >
-              Quick actions
-            </h2>
-            <p className='text-muted-foreground mt-1 text-sm'>
-              Start setting up your business workspace.
-            </p>
-          </div>
-          <div className='flex flex-wrap gap-3'>
-            <Link
-              href='/dashboard/vendors/new'
-              className={buttonVariants({ size: 'lg' })}
-            >
-              Add vendor
-            </Link>
-            <Link
-              href='/dashboard/products/new'
-              className={buttonVariants({ variant: 'outline', size: 'lg' })}
-            >
-              Add product
-            </Link>
-            <Link
-              href='/dashboard/orders/new'
-              className={buttonVariants({ variant: 'outline', size: 'lg' })}
-            >
-              Create order
-            </Link>
-          </div>
-        </section>
-      )}
 
       <section aria-labelledby='work-areas-title'>
         <div className='mb-4'>
